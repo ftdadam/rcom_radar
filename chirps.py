@@ -1,9 +1,11 @@
 # -*- coding: utf-8 -*-
 """
-Created on Sat Jul 29 00:27:06 2023
 
 @author: fdadam
 """
+#%% Libs and functions
+from IPython import get_ipython
+get_ipython().run_line_magic('reset', '-sf')
 
 import numpy as np
 import matplotlib.pyplot as plt
@@ -14,11 +16,8 @@ from matplotlib.gridspec import GridSpec
 c = 3e8 # speed of light [m/s]
 fc = 1.3e9 # Carrier freq
 fs = 100e6 # Sampling freq
-Np = 10 # Intervalos de sampling
-ts = 1/fs
+ts = 1/fs # Sampling Time
 
-
-#Te = 5e-6 # recovery Time 
 Tp = 10e-6 # Pulse Width
 f0 = 0e6 # Chirp Initial Freq
 BW = 20e6 # Chirp bandwidth
@@ -69,7 +68,6 @@ chirp_comp = ifft((chirp_comp_f))
 
 
 # Quitar colas de convolucion
-#chirp_comp_f = chirp_comp_f[len(matched_filter)//2:len(chirp_ref)+len(matched_filter)//2]
 chirp_comp = chirp_comp[len(matched_filter)//2:len(chirp_ref)+len(matched_filter)//2]
 
 
@@ -95,7 +93,6 @@ ax.set_title('chirp_ref')
 ax.grid(True)
 
 ax = fig.add_subplot(gs[0,2])
-#ax.plot(t,np.unwrap(np.degrees(np.angle(chirp_ref))))
 ax.plot(t,np.degrees((np.unwrap(np.angle(chirp_ref)))))
 ax.set_ylabel('deg')
 ax.set_xlabel('t [$\mu$s]')
@@ -151,7 +148,7 @@ ax.plot(t*1e6,matched_filter.real,label=r'$\Re$')
 ax.plot(t*1e6,matched_filter.imag,label=r'$\Im$')
 ax.set_ylabel('Amplitude')
 ax.set_xlabel('Freq [MHz]')
-ax.set_title('matched_filter')
+ax.set_title('matched_filter(t)')
 ax.legend(loc='upper right')
 ax.grid(True)
 
@@ -159,14 +156,14 @@ ax = fig.add_subplot(gs[0,1])
 ax.plot(t*1e6,np.abs(matched_filter))
 ax.set_ylabel('Amplitude')
 ax.set_xlabel('t [$\mu$s]')
-ax.set_title('matched_filter')
+ax.set_title('|matched_filter(t)|')
 ax.grid(True)
 
 ax = fig.add_subplot(gs[0,2])
 ax.plot(t,np.degrees((np.unwrap(np.angle(matched_filter)))))
 ax.set_ylabel('deg')
 ax.set_xlabel('t [$\mu$s]')
-ax.set_title('Ph (matched_filter(f))')
+ax.set_title('Ph (matched_filter(t))')
 ax.grid(True)
 
 #=============
@@ -176,7 +173,7 @@ ax.plot(f/1e6,matched_filter_f.real,label=r'$\Re$')
 ax.plot(f/1e6,matched_filter_f.imag,label=r'$\Im$')
 ax.set_ylabel('Amplitude')
 ax.set_xlabel('Freq [MHz]')
-ax.set_title('matched_filter')
+ax.set_title('matched_filter(f)')
 ax.legend(loc='upper right')
 ax.set_xlim((-3*BW/1e6,3*BW/1e6))
 ax.grid(True)
@@ -218,7 +215,7 @@ ax.plot(t*1e6,chirp_comp.real,label=r'$\Re$')
 ax.plot(t*1e6,chirp_comp.imag,label=r'$\Im$')
 ax.set_ylabel('Amplitude')
 ax.set_xlabel('t [$\mu$s]')
-ax.set_title('chirp_comp')
+ax.set_title('chirp_comp(t)')
 ax.legend(loc='upper right')
 ax.grid(True)
 
@@ -226,14 +223,14 @@ ax = fig.add_subplot(gs[0,1])
 ax.plot(t*1e6,np.abs(chirp_comp))
 ax.set_ylabel('Amplitude')
 ax.set_xlabel('t [$\mu$s]')
-ax.set_title('chirp_comp')
+ax.set_title('|chirp_comp(t)|')
 ax.grid(True)
 
 ax = fig.add_subplot(gs[0,2])
 ax.plot(t,np.degrees((np.unwrap(np.angle(chirp_comp)))))
 ax.set_ylabel('deg')
 ax.set_xlabel('t [$\mu$s]')
-ax.set_title('Ph (chirp_comp(f))')
+ax.set_title('Ph (chirp_comp(t))')
 ax.grid(True)
 
 #=============
@@ -243,7 +240,7 @@ ax.plot(f_full/1e6,chirp_comp_f.real,label=r'$\Re$')
 ax.plot(f_full/1e6,chirp_comp_f.imag,label=r'$\Im$')
 ax.set_ylabel('Amplitude')
 ax.set_xlabel('Freq [MHz]')
-ax.set_title('chirp_comp')
+ax.set_title('chirp_comp(f)')
 ax.legend(loc='upper right')
 #ax.set_xlim((-3*BW/1e6,3*BW/1e6))
 ax.grid(True)
@@ -284,31 +281,52 @@ rank_max = 30e3 # Rango ficticio, deería ser el ambiguo pero se relentiza la si
 rank_res = ts*c/2
 tmax = 2*rank_max/c 
 
-t = np.arange(-tmax/2,tmax/2,ts)
+# Signals
+
+## Simetrical Chirp Centered in Tp/2
+#t = np.arange(0,tmax,ts)
+#rect_tx = np.where(np.abs(t)<=Tp,1,0)
+
+# Simetrical Chirp Centered in 0
+#t = np.arange(-tmax/2,tmax/2,ts)
+#rect_tx = np.where(np.abs(t)<=Tp/2,1,0)
+
+# Asymetrical chirp (pos&neg)
+#t = np.arange(-tmax/2,tmax/2,ts)
+#rect_tx = np.where(((t>=(-Tp/2)*1.2) & (t<=0)) | ((t<=(Tp/2)*1.9) & (t>=0)),1,0)
+
+# Asymetrical chirp (pos)
+t = np.arange(0,tmax,ts)
+rect_tx = np.where(t<(Tp/2)*1.57,1,0)
+
+
+
+tx_chirp = np.exp(1j*np.pi*BW/Tp * t**2)
+tx_chirp = rect_tx*tx_chirp
+tx_chirp_f = fft(tx_chirp)
+#tx_chirp_f = fftshift(fft(tx_chirp))
+
+echo_time = np.arange(0,tmax,ts)
 ranks = np.arange(rank_res,rank_max+rank_res,rank_res)
 Npts = len(t)
 f = fftfreq(Npts,ts)
-
-# Signals
-
-tx_chirp = np.exp(1j*np.pi*BW/Tp * t**2)
-
-rect_tx = np.where(np.abs(t)<=Tp/2,1,0)
-tx_chirp = rect_tx*tx_chirp
-tx_chirp_f = fft(tx_chirp)
 
 rank = 10e3
 target_rcs = 300
 
 t_shift = 2*rank/c
 rx_chirp_f = tx_chirp_f * np.exp(-1j*2*np.pi*f*t_shift) * np.exp(-1j*kwave*(2*rank))
-rx_chirp = ifft(fftshift(rx_chirp_f))
+#rx_chirp_f = fftshift(tx_chirp_f * np.exp(-1j*2*np.pi*f*t_shift) * np.exp(-1j*kwave*(2*rank)))
+rx_chirp = ifft((rx_chirp_f))
 
-matched_filter = np.exp(-1j*np.pi*BW/Tp * t**2)
+#matched_filter = np.exp(-1j*np.pi*BW/Tp * t**2)
+matched_filter = np.flip(np.conj(tx_chirp))
 matched_filter_f = fft(matched_filter)
+#matched_filter_f = matched_filter_f * np.exp(1j*2*np.pi*f*Tp)
 
 rx_comp_f = rx_chirp_f*matched_filter_f
-rx_comp = ifft(fftshift(rx_comp_f))
+#rx_comp_f = fftshift(rx_chirp_f*matched_filter_f)
+rx_comp = ifft(rx_comp_f)
 
 
 # Powers & Noise
@@ -330,57 +348,92 @@ rx_comp_rect = rect_rx*(rx_comp * target_rcs * (Pt*Gt*Ae)/((4*np.pi**2)*(ranks**
 rx_comp_noisy = rx_comp_rect + P_n_r_rect
 
 
-#%%
-
 
 #fig, axes = plt.subplots(4,2)
-fig = plt.figure(layout="tight")
-gs = GridSpec(5, 2, figure=fig)
+fig = plt.figure(layout="tight",figsize=(16,9))
+gs = GridSpec(5, 3, figure=fig)
 
 ax = fig.add_subplot(gs[0,0])
 ax.plot(t*1e6,np.real(tx_chirp))
 ax.plot(t*1e6,np.imag(tx_chirp))
+ax.plot(t*1e6,np.abs(tx_chirp))
 ax.plot(t*1e6,rect_tx,'g--',lw=2)
 ax.set_xlabel('Time [$\mu$s]')
+ax.set_title('Tx Chirp')
 #ax.set_xlim(0,150)
 ax.grid(True)
 
 ax = fig.add_subplot(gs[0,1])
-ax.plot(f[0:Npts//2]/1e6,tx_chirp_f[0:Npts//2])
+ax.plot(t*1e6,np.unwrap(np.angle(tx_chirp)))
+ax.set_xlabel('Time [$\mu$s]')
+ax.set_title('Tx Chirp')
+#ax.set_xlim(0,150)
+ax.grid(True)
+
+ax = fig.add_subplot(gs[0,2])
+ax.plot(f[0:Npts//2]/1e6,np.real(tx_chirp_f[0:Npts//2]))
+ax.plot(f[0:Npts//2]/1e6,np.imag(tx_chirp_f[0:Npts//2]))
+ax.plot(f[0:Npts//2]/1e6,np.abs(tx_chirp_f[0:Npts//2]))
 ax.set_xlabel('Freq [MHz]')
-ax.set_xlim(0,3*BW/1e6)
+#ax.set_xlim(0,3*BW/1e6)
+ax.set_title('Tx Chirp')
 ax.grid(True)
 
 ax = fig.add_subplot(gs[1,0])
 ax.plot(t*1e6,np.real(rx_chirp))
 ax.plot(t*1e6,np.imag(rx_chirp))
+ax.plot(t*1e6,np.abs(rx_chirp))
+ax.set_title('Echo Chirp')
 ax.set_xlabel('Time [$\mu$s]')
 #ax.set_xlim(0,150)
 ax.grid(True)
 
 ax = fig.add_subplot(gs[1,1])
-ax.plot(f[0:Npts//2]/1e6,rx_chirp_f[0:Npts//2])
-ax.set_xlabel('Freq [MHz]')
-ax.set_xlim(0,3*BW/1e6)
-ax.grid(True)
-
-ax = fig.add_subplot(gs[2,0])
-ax.plot(t*1e6,np.real(rx_comp))
-ax.plot(t*1e6,np.imag(rx_comp))
+ax.plot(t*1e6,np.unwrap(np.angle(rx_chirp)))
+ax.set_title('Echo Chirp')
 ax.set_xlabel('Time [$\mu$s]')
 #ax.set_xlim(0,150)
 ax.grid(True)
 
-ax = fig.add_subplot(gs[2,1])
-ax.plot(f[0:Npts//2]/1e6,rx_comp_f[0:Npts//2])
+ax = fig.add_subplot(gs[1,2])
+ax.plot(f[0:Npts//2]/1e6,np.real(rx_chirp_f[0:Npts//2]))
+ax.plot(f[0:Npts//2]/1e6,np.imag(rx_chirp_f[0:Npts//2]))
+ax.plot(f[0:Npts//2]/1e6,np.abs(rx_chirp_f[0:Npts//2]))
 ax.set_xlabel('Freq [MHz]')
-ax.set_xlim(0,3*BW/1e6)
+#ax.set_xlim(0,3*BW/1e6)
+ax.set_title('Echo Chirp')
+ax.grid(True)
+
+ax = fig.add_subplot(gs[2,0])
+ax.plot(echo_time*1e6,np.real(rx_comp))
+ax.plot(echo_time*1e6,np.imag(rx_comp))
+ax.plot(echo_time*1e6,np.abs(rx_comp))
+ax.set_xlabel('Time [$\mu$s]')
+ax.set_title('Echo Chirp Compressed')
+#ax.set_xlim(0,150)
+ax.grid(True)
+
+ax = fig.add_subplot(gs[2,1])
+ax.plot(echo_time*1e6,np.unwrap(np.angle(rx_comp)))
+ax.set_xlabel('Time [$\mu$s]')
+ax.set_title('Echo Chirp Compressed')
+#ax.set_xlim(0,150)
+ax.grid(True)
+
+ax = fig.add_subplot(gs[2,2])
+ax.plot(f[0:Npts//2]/1e6,np.real(rx_comp_f[0:Npts//2]))
+ax.plot(f[0:Npts//2]/1e6,np.imag(rx_comp_f[0:Npts//2]))
+ax.plot(f[0:Npts//2]/1e6,np.abs(rx_comp_f[0:Npts//2]))
+ax.set_xlabel('Freq [MHz]')
+#ax.set_xlim(0,3*BW/1e6)
+ax.set_title('Echo Chirp Compressed')
 ax.grid(True)
 
 ax = fig.add_subplot(gs[3,:])
 #ax.plot(ranks/1e3,np.abs(rx_comp))
 ax.plot(ranks/1e3,np.abs(rx_comp_noisy))
 ax.set_xlabel('Rank [km]')
+ax.set_title('Echo Chirp Compressed')
 #ax.set_xlim(0,150)
 ax.grid(True)
 
@@ -389,4 +442,5 @@ ax = fig.add_subplot(gs[4,:])
 ax.plot(ranks/1e3,np.abs(P_n_r_rect))
 ax.set_xlabel('Rank [km]')
 #ax.set_xlim(0,150)
+ax.set_title('Rx Signal')
 ax.grid(True)
