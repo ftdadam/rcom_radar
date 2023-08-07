@@ -16,6 +16,7 @@ import matplotlib.pyplot as plt
 from matplotlib.widgets import Slider
 import pandas as pd
 from scipy.fft import fft, ifft, fftshift, fftfreq
+from matplotlib import cm
 
 def fastconv(A,B):
     out_len = len(A)+len(B)-1
@@ -359,7 +360,7 @@ ax.grid(True)
 
 ax = axes[1]
 ax.plot(ranks,np.abs(signal_comp[0]),label='Comp $t_0$')
-ax.plot(ranks,np.abs(signal_comp[1]),label='Comp $t_0$')
+ax.plot(ranks,np.abs(signal_comp[1]),label='Comp $t_1$')
 ax.set_title('Rx compressed signals')
 ax.set_ylabel('Value')
 ax.legend(loc='upper right')
@@ -468,6 +469,7 @@ gain_slider.on_changed(update)
 ax = axes[0]
 ax.plot(ranks,np.abs(radar_signal[0]),label='Rx $t_0$')
 ax.plot(ranks,np.abs(radar_signal[1]),label='Rx $t_1$')
+ax.plot(ranks,np.abs(radar_signal[1]),label='Rx $t_2$')
 ax.set_title('Rx Raw signals')
 ax.set_ylabel('Value')
 ax.legend(loc='upper right')
@@ -475,7 +477,7 @@ ax.grid(True)
 
 ax = axes[1]
 ax.plot(ranks,np.abs(signal_comp[0]),label='Comp $t_0$')
-ax.plot(ranks,np.abs(signal_comp[1]),label='Comp $t_0$')
+ax.plot(ranks,np.abs(signal_comp[1]),label='Comp $t_1$')
 ax.set_title('Rx compressed signals')
 ax.set_ylabel('Value')
 ax.legend(loc='upper right')
@@ -525,8 +527,6 @@ filtered = (cfar_mti_doppler.T@FD).T
 #filtered = (cfar_mti_doppler.T * FD).T
 
 #filtered = (signal_comp.T@FD).T
-
-from matplotlib import cm
 
 vel_vect = -np.linspace(-vu_ms/2,vu_ms/2,Np,endpoint=True) # El signo menos es solo para plotear
 
