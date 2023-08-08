@@ -67,7 +67,7 @@ rank_max = 30e3 # Maximum Range [m] (podría ser el Ru)
 rank_res = ts*c/2 # Range Step [m]
 tmax = 2*rank_max/c # Maximum Simulation Time
 
-radar_signal = pd.read_csv('signal.csv',index_col=None)
+radar_signal = pd.read_csv('signal_example.csv',index_col=None)
 radar_signal = np.array(radar_signal['real']+1j*radar_signal['imag'])
 radar_signal = radar_signal.reshape(Np,-1)
 
@@ -105,7 +105,7 @@ matched_filter_f = fft(matched_filter,norm='ortho')
 
 #%% Plot Signals
 
-fig, axes = plt.subplots(2,1,figsize=(8,8),sharex=True)
+fig, axes = plt.subplots(2,1,figsize=(10,10),sharex=True)
 
 fig.suptitle('Received Signal')
 
@@ -132,6 +132,8 @@ signal_comp = np.stack(signal_comp,axis=0)
 
 fig, axes = plt.subplots(2,1,figsize=(10,10))
 
+fig.suptitle('Uncompressed & Compressed Signal')
+
 ax = axes[0]
 ax.plot(ranks/1e3,np.abs(radar_signal[0]))
 ax.set_ylabel('Abs value')
@@ -157,9 +159,16 @@ h_cfar = np.concatenate((np.repeat(v_ref,n_ref),
 # Plot
 
 fig, ax = plt.subplots(1,1,figsize=(8,8))
+
+fig.suptitle('CFAR Window')
+
 ax.step(range(len(h_cfar)),h_cfar,marker='.')
 ax.set_xlabel('Sample')
 ax.set_ylabel('CFAR window Value')
+ax.annotate(text=f'Reference Cells: {n_ref*2}\nGap Cells: {n_gap}',
+                    xy=(0.2,0.2),
+                    xycoords='figure fraction',
+                    bbox={'facecolor': 'wheat', 'alpha': 0.5, 'pad': 10})
 ax.grid(True)
 
 #%% mti simple cancelador (mti_sc)
@@ -315,7 +324,7 @@ gain_slider = Slider(
     ax=axfreq,
     label='sti Gain',
     valmin=1,
-    valmax=10,
+    valmax=20,
     valinit=init_gain_sti,
     orientation="vertical"
 )
@@ -469,7 +478,7 @@ gain_slider.on_changed(update)
 ax = axes[0]
 ax.plot(ranks,np.abs(radar_signal[0]),label='Rx $t_0$')
 ax.plot(ranks,np.abs(radar_signal[1]),label='Rx $t_1$')
-ax.plot(ranks,np.abs(radar_signal[1]),label='Rx $t_2$')
+ax.plot(ranks,np.abs(radar_signal[2]),label='Rx $t_2$')
 ax.set_title('Rx Raw signals')
 ax.set_ylabel('Value')
 ax.legend(loc='upper right')
@@ -478,6 +487,7 @@ ax.grid(True)
 ax = axes[1]
 ax.plot(ranks,np.abs(signal_comp[0]),label='Comp $t_0$')
 ax.plot(ranks,np.abs(signal_comp[1]),label='Comp $t_1$')
+ax.plot(ranks,np.abs(signal_comp[2]),label='Comp $t_2$')
 ax.set_title('Rx compressed signals')
 ax.set_ylabel('Value')
 ax.legend(loc='upper right')
@@ -491,7 +501,7 @@ ax.plot(ranks,
 line_th_cfar_mti_dc, = ax.plot(ranks,
                                 np.abs(calc_th_mti_dc(init_gain_mti,cfar_mti_dc,ranks)[0]),
                                 label='MTI Threshold')
-ax.set_title('MTI SC')
+ax.set_title('MTI DC')
 ax.set_ylabel('Value')
 ax.legend(loc='upper right')
 ax.grid(True)
@@ -530,15 +540,15 @@ filtered = (cfar_mti_doppler.T@FD).T
 
 vel_vect = -np.linspace(-vu_ms/2,vu_ms/2,Np,endpoint=True) # El signo menos es solo para plotear
 
-fig, ax = plt.subplots(subplot_kw={"projection": "3d"},figsize=(16,9))
+fig, ax = plt.subplots(subplot_kw={"projection": "3d"},figsize=(10,8))
 fig.suptitle('Producto Doppler')
 x = vel_vect
-y = ranks
+y = ranks/1e3
 X, Y = np.meshgrid(x, y)
 Z = np.abs(fftshift(filtered,axes=0)).T
 surf = ax.plot_surface(X, Y, Z,cmap=cm.coolwarm)
-ax.set_xlabel('Velocity')
-ax.set_ylabel('Range')
+ax.set_xlabel('Velocity [m/s]')
+ax.set_ylabel('Range [km]')
 ax.set_zlabel('Doppler Product')
 fig.colorbar(surf, shrink=0.5)
 

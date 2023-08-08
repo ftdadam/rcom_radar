@@ -145,7 +145,6 @@ class Target:
     self.init_rank_m = init_rank_km*1e3
     self.vel_ms = vel_ms
     self.vel_kmh = vel_ms*3.6
-    #self.snr_db = snr_db
     self.relative_gain = relative_gain
 
 # Range [km], Vel [km/h], Relative Power
