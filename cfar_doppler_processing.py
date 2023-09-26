@@ -67,7 +67,7 @@ rank_max = 30e3 # Maximum Range [m] (podría ser el Ru)
 rank_res = ts*c/2 # Range Step [m]
 tmax = 2*rank_max/c # Maximum Simulation Time
 
-radar_signal = pd.read_csv('signal_example.csv',index_col=None)
+radar_signal = pd.read_csv('signal_4.csv',index_col=None)
 radar_signal = np.array(radar_signal['real']+1j*radar_signal['imag'])
 radar_signal = radar_signal.reshape(Np,-1)
 
@@ -224,7 +224,7 @@ def update(val):
     line_th_cfar_mti_sc.set_ydata(np.abs(th_cfar_mti_sc))
     line_dif_th_mti_sc.set_ydata(np.abs(dif_th_mti_sc))
     target_anotation.remove()
-    if(len(targets_rank) > 5 ):
+    if(len(targets_rank) > 6 ):
     
         target_anotation = ax.annotate(text=f'{len(targets_rank)} Targets',
                                        xy=(0.05,0.8),

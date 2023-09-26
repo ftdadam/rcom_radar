@@ -147,14 +147,89 @@ class Target:
     self.vel_kmh = vel_ms*3.6
     self.relative_gain = relative_gain
 
-# Range [km], Vel [km/h], Relative Power
-t1 = Target(10,50,1)
-t2 = Target(15,-40,4)
-t3 = Target(18,0,27)
-t4 = Target(20,30,32)
+#case = 'signal_example'
+#case = 'signal_1'
+#case = 'signal_2'
+#case = 'signal_3'
+case = 'signal_4'
 
-targets = [t1,t2,t3,t4]
-
+if(case=='signal_1'):
+    # Range [km], Vel [m/s], Relative Power
+    t1 = Target(10,86.5384,0.8) #vu_ms/2
+    #t2
+    t3 = Target(15.2,-40,6.9)
+    t4 = Target(15.5,22.945,6.9)
+    #t5
+    t6 = Target(20,43.2692,32) #vu_ms/4
+    t7 = Target(21,173.07692,33) #vu
+    t8 = Target(22.215,32,34)
+    #
+    t2 = Target(12,0,3.5)
+    t5 = Target(17.6,0,26)
+    
+    targets = [t1,t2,t3,t4,t5,t6,t7,t8]
+    signal_name = case
+elif(case == 'signal_2'):
+    # Range [km], Vel [m/s], Relative Power
+    t1 = Target(8,32,0.6) 
+    t2 = Target(12,60,3.5)
+    #t3
+    t4 = Target(19.8,25,32) 
+    t5 = Target(20.2,43.2692,33) #vu_ms/4
+    #t6
+    t7 = Target(22,173.07692,34) #vu
+    t8 = Target(26.215,86.5384,40) #vu_ms/2
+    #
+    t3 = Target(15.6,0,8)
+    t6 = Target(20.3,0,60)
+    
+    
+    targets = [t1,t2,t3,t4,t5,t6,t7,t8]
+    signal_name = case
+elif(case == 'signal_3'):
+    # Range [km], Vel [m/s], Relative Power
+    t1 = Target(9,-43.2692,1.2) #vu_ms/4
+    t2 = Target(10,173.07692,1) # vu
+    #t3
+    #t4
+    t5 = Target(22.3,25,32)
+    t6 = Target(22.7,-60,34)
+    t7 = Target(24,2,45) # muy baja
+    t8 = Target(24.5,86.5384,40) #vu_ms/2
+    
+    #
+    t3 = Target(12,0,5)
+    t4 = Target(14,0,7)
+    
+    
+    targets = [t1,t2,t3,t4,t5,t6,t7,t8]
+    signal_name = case
+    
+elif(case == 'signal_4'):
+    # Range [km], Vel [m/s], Relative Power
+    t1 = Target(10,-60,0.8) 
+    t2 = Target(12,25,2.5)
+    #t3
+    t4 = Target(16.1,86.5384,6.5) #vu_ms/4
+    t5 = Target(16.4,43.2692,6.7) #vu_ms/2
+    t6 = Target(24,-30,40)
+    t7 = Target(24.5,200,45) # muy alta
+    #t8
+    t3 = Target(13,0,4)
+    t8 = Target(26,0,62)
+    
+    
+    targets = [t1,t2,t3,t4,t5,t6,t7,t8]
+    signal_name = case
+elif(case == 'signal_example'):
+    # Range [km], Vel [m/s], Relative Power
+    t1 = Target(10,50,1)
+    t2 = Target(15,-40,4)
+    t3 = Target(18,0,27)
+    t4 = Target(20,30,32)
+    targets = [t1,t2,t3,t4]
+    signal_name = case
+    
 #%% Radar Signal Generation
 
 radar_signal = []
@@ -215,9 +290,9 @@ for pri_ptr in range(Np):
         ax.grid(True)
         
         ax = fig.add_subplot(gs[1,0])
-        ax.plot(t*1e6,np.real(echo_chirp))
-        ax.plot(t*1e6,np.imag(echo_chirp))
-        ax.plot(t*1e6,np.abs(echo_chirp))
+        ax.plot((t-t[0])*1e6,np.real(echo_chirp))
+        ax.plot((t-t[0])*1e6,np.imag(echo_chirp))
+        ax.plot((t-t[0])*1e6,np.abs(echo_chirp))
         ax.set_xlabel('Time [$\mu$s]')
         ax.set_title('Echo Chirp')
         ax.grid(True)
@@ -232,9 +307,9 @@ for pri_ptr in range(Np):
         ax.grid(True)
         
         ax = fig.add_subplot(gs[2,0])
-        ax.plot(t*1e6,np.real(echo_comp))
-        ax.plot(t*1e6,np.imag(echo_comp))
-        ax.plot(t*1e6,np.abs(echo_comp))
+        ax.plot((t-t[0])*1e6,np.real(echo_comp))
+        ax.plot((t-t[0])*1e6,np.imag(echo_comp))
+        ax.plot((t-t[0])*1e6,np.abs(echo_comp))
         ax.set_xlabel('Time [$\mu$s]')
         ax.set_title('Echo Comp Noiseless')
         ax.grid(True)
@@ -288,7 +363,7 @@ data = {'real':radar_signal.flatten().real,
 
 signal = pd.DataFrame(data=data)
 
-signal.to_csv('./signal.csv')
+signal.to_csv(f'./{signal_name}.csv')
 
 #plt.figure()
 #plt.plot(fastconv(matched_filter,rx_signal_noisy))
